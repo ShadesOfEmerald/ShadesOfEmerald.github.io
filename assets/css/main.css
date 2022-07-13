@@ -2762,6 +2762,18 @@ input, select, textarea {
 			opacity: 0;
 		}
 
+		body.is-preload .fadeIn {
+			-moz-transform: scale(0.9);
+			-webkit-transform: scale(0.9);
+			-ms-transform: scale(0.9);
+			transform: scale(0.9);
+			opacity: 0;
+		}
+		body.is-touch .fadeIn article .content {
+			max-height: 15em;
+			opacity: 1;
+		}
+
 		body.is-touch .tiles article .content {
 			max-height: 15em;
 			opacity: 1;

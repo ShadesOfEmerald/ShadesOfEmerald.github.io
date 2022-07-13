@@ -26,6 +26,22 @@
 			}, 100);
 		});
 
+
+
+//
+
+
+
+//fade in one after another(?)
+//	$("is-preload").each(function(index) {
+//    $(this).delay(400*index).fadeIn(300);
+//});
+
+
+
+//
+
+
 	// Touch?
 		if (browser.mobile)
 			$body.addClass('is-touch');
@@ -179,7 +195,7 @@
 				// Hide on escape.
 					if (event.keyCode == 27)
 						$menu._hide();
-
 			});
+
 
 })(jQuery);

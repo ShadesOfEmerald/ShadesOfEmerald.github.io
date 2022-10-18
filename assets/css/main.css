@@ -2286,6 +2286,18 @@ input, select, textarea {
 	input[type="radio"] + label:before {
 		border-radius: 100%;
 	}
+/* Ribbon Stack Animation */
+
+svg {
+	width: 100%;
+	height: 100%;
+	visibility: hidden;
+   }
+
+path {
+	mix-blend-mode: multiply
+}
+
 
 /* Box */
 

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Physical Screen Position Tool</title>
+    <style>
+        :root {
+            --line-color: rgba(150, 150, 150, 0.5);
+            --tooltip-bg: #222;
+            --accent-color: #00ffcc;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #111;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: none; /* Crosshair is the primary focus */
+            touch-action: none;
+        }
+
+        /* --- BACK BUTTON --- */
+        #back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+            pointer-events: auto; /* Ensures it can be clicked */
+        }
+
+        /* PC Hover State */
+        #back-button:hover {
+            opacity: 0.5;
+        }
+
+        /* --- VISUALS --- */
+        #line-x {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 1px;
+            border-top: 1px dashed var(--line-color);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #line-y {
+            position: absolute;
+            top: 0; left: 0; width: 1px; height: 100%;
+            border-left: 1px dashed var(--line-color);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #tooltip {
+            position: absolute;
+            background-color: var(--tooltip-bg);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: none;
+            border: 1px solid #444;
+            min-width: 160px;
+        }
+
+        .label { color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
+        .val { font-family: 'Courier New', monospace; font-weight: bold; color: var(--accent-color); font-size: 16px; }
+        .divider { height: 1px; background: #444; margin: 8px 0; }
+
+        #instructions {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #444;
+            text-align: center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="javascript:history.back()" id="back-button">← BACK</a>
+
+    <div id="instructions">
+        <h2>Physical Screen Tracker</h2>
+        <p>Move mouse or touch to track absolute screen coordinates.</p>
+    </div>
+    
+    <div id="line-x"></div>
+    <div id="line-y"></div>
+    
+    <div id="tooltip">
+        <span class="label">Physical Screen (Absolute)</span>
+        <div>X: <span id="screen-x" class="val">0</span></div>
+        <div>Y: <span id="screen-y" class="val">0</span></div>
+        
+        <div class="divider"></div>
+        
+        <span class="label">Browser Viewport (Relative)</span>
+        <div>x: <span id="client-x" class="val">0</span></div>
+        <div>y: <span id="client-y" class="val">0</span></div>
+    </div>
+
+    <script>
+        const lineX = document.getElementById('line-x');
+        const lineY = document.getElementById('line-y');
+        const tooltip = document.getElementById('tooltip');
+        const backBtn = document.getElementById('back-button');
+        
+        const screenXText = document.getElementById('screen-x');
+        const screenYText = document.getElementById('screen-y');
+        const clientXText = document.getElementById('client-x');
+        const clientYText = document.getElementById('client-y');
+        
+        const instructions = document.getElementById('instructions');
+
+        function updatePosition(e) {
+            // 1. COORDINATE CALCULATION
+            const sX = Math.round(e.screenX);
+            const sY = Math.round(e.screenY);
+            const cX = Math.round(e.clientX);
+            const cY = Math.round(e.clientY);
+
+            // 2. MOBILE DRAG-TO-TOP-LEFT DETECTION
+            // We check if the current pointer position is inside the button's boundaries
+            const btnRect = backBtn.getBoundingClientRect();
+            const isOverButton = (
+                cX >= btnRect.left && 
+                cX <= btnRect.right && 
+                cY >= btnRect.top && 
+                cY <= btnRect.bottom
+            );
+
+            // If we are over the button (via mouse or touch drag), fade it
+            if (isOverButton) {
+                backBtn.style.opacity = "0.5";
+            } else {
+                backBtn.style.opacity = "1.0";
+            }
+
+            // 3. UPDATE CROSSHAIR VISUALS
+            lineX.style.top = cY + 'px';
+            lineY.style.left = cX + 'px';
+
+            // 4. POSITION TOOLTIP
+            let offsetX = 20;
+            let offsetY = 20;
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (cX + tooltipRect.width + offsetX > window.innerWidth) offsetX = -(tooltipRect.width + 20);
+            if (cY + tooltipRect.height + offsetY > window.innerHeight) offsetY = -(tooltipRect.height + 20);
+
+            tooltip.style.left = (cX + offsetX) + 'px';
+            tooltip.style.top = (cY + offsetY) + 'px';
+
+            // 5. UPDATE TEXT
+            screenXText.innerText = sX + 'px';
+            screenYText.innerText = sY + 'px';
+            clientXText.innerText = cX + 'px';
+            clientYText.innerText = cY + 'px';
+
+            // UI feedback
+            tooltip.style.display = 'block';
+            instructions.style.display = 'none';
+        }
+
+        // Pointermove handles mouse, touch, and pen input
+        window.addEventListener('pointermove', updatePosition);
+        window.addEventListener('pointerdown', updatePosition);
+    </script>
+</body>
+</html>
